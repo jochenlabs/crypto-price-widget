@@ -1,0 +1,158 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CryptoPriceWidget.ViewModels"
+        x:Class="CryptoPriceWidget.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Crypto Prices"
+        SizeToContent="Width"
+        MinWidth="400"
+        Height="52"
+        MinHeight="52"
+        MaxHeight="52"
+        CanResize="False"
+        SystemDecorations="BorderOnly"
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        WindowStartupLocation="Manual"
+        Topmost="True">
+
+  <Window.Styles>
+    <Style Selector="TextBlock.coin-symbol">
+      <Setter Property="Foreground" Value="#888888" />
+      <Setter Property="FontSize"   Value="11" />
+    </Style>
+    <Style Selector="TextBlock.coin-price">
+      <Setter Property="Foreground" Value="#FFFFFF" />
+      <Setter Property="FontSize"   Value="15" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="Rectangle.divider">
+      <Setter Property="Width"   Value="1" />
+      <Setter Property="Fill"    Value="#33FFFFFF" />
+      <Setter Property="Margin"  Value="8 8" />
+    </Style>
+    <Style Selector="Button.icon">
+      <Setter Property="Background"           Value="Transparent" />
+      <Setter Property="BorderThickness"      Value="0" />
+      <Setter Property="Padding"              Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment"   Value="Center" />
+      <Setter Property="CornerRadius"         Value="6" />
+    </Style>
+  </Window.Styles>
+
+  <Panel>
+    <!-- Acrylic background -->
+    <ExperimentalAcrylicBorder IsHitTestVisible="False" CornerRadius="12">
+      <ExperimentalAcrylicBorder.Material>
+        <ExperimentalAcrylicMaterial
+          BackgroundSource="Digger"
+          TintColor="#12122A"
+          TintOpacity="0.92"
+          MaterialOpacity="0.98" />
+      </ExperimentalAcrylicBorder.Material>
+    </ExperimentalAcrylicBorder>
+
+    <!-- Pill border -->
+    <Border CornerRadius="12" BorderBrush="#33FFFFFF" BorderThickness="1">
+
+      <!-- Full-area drag surface -->
+      <Border Background="#01000000" PointerPressed="DragRegion_PointerPressed">
+
+        <DockPanel Margin="10 0" LastChildFill="True">
+
+          <!-- Right: Add / Pin / Close buttons -->
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+
+            <Button Classes="icon"
+                    Width="26" Height="26"
+                    Foreground="#4CAF50"
+                    FontSize="17"
+                    FontWeight="Bold"
+                    ToolTip.Tip="Add coin"
+                    Click="AddCoin_Click">
+              <TextBlock Text="+" FontSize="17" FontWeight="Bold" />
+            </Button>
+
+            <Button x:Name="PinButton"
+                    Classes="icon"
+                    Width="26" Height="26"
+                    Foreground="#555555"
+                    FontSize="12"
+                    ToolTip.Tip="Always on top"
+                    Click="PinButton_Click">
+              <TextBlock Text="📌" FontSize="12" />
+            </Button>
+
+            <Button Classes="icon"
+                    Width="26" Height="26"
+                    Foreground="#888888"
+                    FontSize="12"
+                    Click="CloseButton_Click">
+              <TextBlock Text="✕" FontSize="12" />
+            </Button>
+
+          </StackPanel>
+
+          <!-- Center: dynamic coin tiles + status -->
+          <StackPanel Orientation="Horizontal"
+                      VerticalAlignment="Center"
+                      Spacing="0">
+
+            <!-- Dynamic coin tiles -->
+            <ItemsControl ItemsSource="{Binding Coins}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:CoinTileViewModel">
+                  <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Glyph}"
+                               Foreground="{Binding AccentBrush}"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Symbol}"
+                               Classes="coin-symbol"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Price}"
+                               Classes="coin-price"
+                               VerticalAlignment="Center" />
+                    <!-- Remove tile button -->
+                    <Button Classes="icon"
+                            Width="14" Height="14"
+                            Foreground="#444444"
+                            FontSize="9"
+                            VerticalAlignment="Center"
+                            ToolTip.Tip="Remove"
+                            Click="RemoveCoin_Click">
+                      <TextBlock Text="×" FontSize="9" />
+                    </Button>
+                    <Rectangle Classes="divider" />
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Status dot + timestamp -->
+            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+              <Ellipse Width="6" Height="6"
+                       Fill="{Binding StatusColor}"
+                       VerticalAlignment="Center" />
+              <TextBlock Text="{Binding LastUpdated}"
+                         Classes="coin-symbol"
+                         VerticalAlignment="Center" />
+            </StackPanel>
+
+          </StackPanel>
+
+        </DockPanel>
+      </Border>
+    </Border>
+  </Panel>
+
+</Window>

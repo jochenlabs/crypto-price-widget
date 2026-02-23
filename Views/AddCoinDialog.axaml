@@ -1,0 +1,70 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="CryptoPriceWidget.Views.AddCoinDialog"
+        Title="Add Coin"
+        Width="280"
+        Height="160"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#1A1A2E"
+        ShowInTaskbar="False">
+
+  <Window.Styles>
+    <Style Selector="TextBox">
+      <Setter Property="Background"    Value="#0D0D1E" />
+      <Setter Property="Foreground"    Value="#EEEEEE" />
+      <Setter Property="CaretBrush"    Value="#EEEEEE" />
+      <Setter Property="BorderBrush"   Value="#33FFFFFF" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius"  Value="6" />
+      <Setter Property="Padding"       Value="8 6" />
+      <Setter Property="FontSize"      Value="13" />
+    </Style>
+    <Style Selector="Button.primary">
+      <Setter Property="Background"  Value="#F7931A" />
+      <Setter Property="Foreground"  Value="White" />
+      <Setter Property="FontWeight"  Value="SemiBold" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding"     Value="14 6" />
+    </Style>
+    <Style Selector="Button.secondary">
+      <Setter Property="Background"  Value="Transparent" />
+      <Setter Property="Foreground"  Value="#888888" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding"     Value="14 6" />
+      <Setter Property="BorderBrush" Value="#33FFFFFF" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+  </Window.Styles>
+
+  <Border Margin="18" BorderBrush="#33FFFFFF" BorderThickness="1" CornerRadius="10" Padding="16">
+    <StackPanel Spacing="12">
+
+      <!-- Label -->
+      <TextBlock Text="Enter coin name or symbol"
+                 Foreground="#AAAAAA"
+                 FontSize="12" />
+
+      <!-- Input -->
+      <TextBox x:Name="SearchBox"
+               Watermark="e.g.  solana,  SOL,  BNB …"
+               KeyDown="SearchBox_KeyDown" />
+
+      <!-- Status message -->
+      <TextBlock x:Name="StatusText"
+                 Text=""
+                 Foreground="#E05555"
+                 FontSize="11"
+                 TextWrapping="Wrap"
+                 IsVisible="False" />
+
+      <!-- Buttons -->
+      <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+        <Button Classes="secondary" Content="Cancel" Click="Cancel_Click" />
+        <Button x:Name="AddButton" Classes="primary" Content="Add" Click="Add_Click" />
+      </StackPanel>
+
+    </StackPanel>
+  </Border>
+
+</Window>
