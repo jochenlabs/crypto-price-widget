@@ -68,8 +68,28 @@ public class CoinTileViewModel : INotifyPropertyChanged
     public decimal? PriceRaw       => _priceRaw;
     public DateTime? PriceUpdatedAt => _priceUpdatedAt;
 
-    public string LastUpdatedText =>
-        _priceUpdatedAt.HasValue ? _priceUpdatedAt.Value.ToString("HH:mm:ss") : "–";
+    public string LastUpdatedText
+    {
+        get
+        {
+            if (!_priceUpdatedAt.HasValue) return "\u2013";
+            var age = DateTime.Now - _priceUpdatedAt.Value;
+            if (age.TotalSeconds < 60)  return "just now";
+            if (age.TotalMinutes < 60)  return $"{(int)age.TotalMinutes}m ago";
+            return $"{(int)age.TotalHours}h ago";
+        }
+    }
+
+    public void NotifyTimeUpdated() => OnPropertyChanged(nameof(LastUpdatedText));
+
+    private string _syncDotColor = "#555555";
+    public string SyncDotColor
+    {
+        get => _syncDotColor;
+        private set { if (_syncDotColor != value) { _syncDotColor = value; OnPropertyChanged(); } }
+    }
+
+    public void MarkSyncFailed() => SyncDotColor = "#E05555";
 
     /// <summary>Called by the refresh loop with a live price.</summary>
     public void SetPrice(decimal price)
@@ -77,6 +97,7 @@ public class CoinTileViewModel : INotifyPropertyChanged
         _priceRaw       = price;
         _priceUpdatedAt = DateTime.Now;
         Price           = $"${price:N2}";
+        SyncDotColor    = "#4CAF50";
         OnPropertyChanged(nameof(LastUpdatedText));
     }
 

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace CryptoPriceWidget.Services;
@@ -15,8 +14,6 @@ public class CryptoPriceService
 {
     // Spacing between individual coin requests to stay within the free-tier rate limit
     private static readonly TimeSpan RequestDelay = TimeSpan.FromMilliseconds(1500);
-    // How long to wait before retrying after a 429 response
-    private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(10);
 
     private static readonly HttpClient _client = new()
     {
@@ -34,10 +31,10 @@ public class CryptoPriceService
         {
             // Throttle: wait between requests (skip before the very first one)
             if (!first)
-                await Task.Delay(RequestDelay);
+                await Task.Delay(RequestDelay).ConfigureAwait(false);
             first = false;
 
-            decimal? price = await FetchPriceWithRetryAsync(coinId);
+            decimal? price = await FetchPriceWithRetryAsync(coinId).ConfigureAwait(false);
             if (price.HasValue)
                 result[coinId] = price.Value;
             else
@@ -50,43 +47,32 @@ public class CryptoPriceService
 
     private async Task<decimal?> FetchPriceWithRetryAsync(string coinId)
     {
-        for (int attempt = 0; attempt < 2; attempt++)
+        try
         {
-            try
+            var url = $"https://api.coingecko.com/api/v3/simple/price?ids={coinId}&vs_currencies=usd";
+            using var response = await _client.GetAsync(url).ConfigureAwait(false);
+
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                var url = $"https://api.coingecko.com/api/v3/simple/price?ids={coinId}&vs_currencies=usd";
-                using var response = await _client.GetAsync(url);
-
-                if (response.StatusCode == HttpStatusCode.TooManyRequests)
-                {
-                    // Respect Retry-After header if present, otherwise use default
-                    int retryAfter = RetryDelay.Seconds;
-                    if (response.Headers.TryGetValues("Retry-After", out var values) &&
-                        int.TryParse(values.FirstOrDefault(), out var headerVal))
-                        retryAfter = headerVal;
-
-                    Console.Error.WriteLine($"[CryptoPriceService] 429 for {coinId} — waiting {retryAfter}s before retry.");
-                    await Task.Delay(TimeSpan.FromSeconds(retryAfter));
-                    continue; // retry
-                }
-
-                response.EnsureSuccessStatusCode();
-                var json = await response.Content.ReadAsStringAsync();
-                using var doc = JsonDocument.Parse(json);
-
-                if (doc.RootElement.TryGetProperty(coinId, out var coinEl) &&
-                    coinEl.TryGetProperty("usd", out var priceEl))
-                    return priceEl.GetDecimal();
-
+                Console.Error.WriteLine($"[CryptoPriceService] 429 for {coinId} — skipping, will retry next cycle.");
                 return null;
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"[CryptoPriceService] Failed to fetch price for {coinId} (attempt {attempt + 1}): {ex.Message}");
-            }
-        }
 
-        return null;
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            using var doc = JsonDocument.Parse(json);
+
+            if (doc.RootElement.TryGetProperty(coinId, out var coinEl) &&
+                coinEl.TryGetProperty("usd", out var priceEl))
+                return priceEl.GetDecimal();
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[CryptoPriceService] Failed to fetch price for {coinId}: {ex.Message}");
+            return null;
+        }
     }
 
     // Search CoinGecko for a coin by name or symbol, returns best match
@@ -95,7 +81,7 @@ public class CryptoPriceService
         try
         {
             var url = $"https://api.coingecko.com/api/v3/search?query={Uri.EscapeDataString(query)}";
-            var json = await _client.GetStringAsync(url);
+            var json = await _client.GetStringAsync(url).ConfigureAwait(false);
             using var doc = JsonDocument.Parse(json);
 
             var coins = doc.RootElement.GetProperty("coins");

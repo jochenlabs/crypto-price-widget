@@ -16,24 +16,11 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private readonly CryptoPriceService _priceService = new();
     private readonly CoinStorageService _storage = new();
     private readonly Timer _timer;
+    private readonly DispatcherTimer _clockTimer;
     private bool _initializing = true;
 
     public ObservableCollection<CoinTileViewModel> Coins { get; } = new();
 
-    private string _lastUpdated = "–";
-    private string _statusColor = "#888888";
-
-    public string LastUpdated
-    {
-        get => _lastUpdated;
-        private set { _lastUpdated = value; OnPropertyChanged(); }
-    }
-
-    public string StatusColor
-    {
-        get => _statusColor;
-        private set { _statusColor = value; OnPropertyChanged(); }
-    }
 
     public MainViewModel()
     {
@@ -44,11 +31,15 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         _timer = new Timer(_ => _ = RefreshAsync(), null,
                            TimeSpan.FromSeconds(30),
                            TimeSpan.FromSeconds(30));
+
+        _clockTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
+        _clockTimer.Tick += (_, _) => { foreach (var c in Coins) c.NotifyTimeUpdated(); };
+        _clockTimer.Start();
     }
 
     private async Task InitializeAsync()
     {
-        var saved = await _storage.LoadAsync();
+        var saved = await _storage.LoadAsync().ConfigureAwait(false);
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
@@ -58,7 +49,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             _initializing = false;
         });
 
-        await RefreshAsync();
+        await RefreshAsync().ConfigureAwait(false);
     }
 
     private void AddCoinToCollection(string id, string symbol, string name,
@@ -90,7 +81,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     // Returns null on success, or an error message.
     public async Task<string?> TryAddCoinAsync(string query)
     {
-        var info = await _priceService.SearchCoinAsync(query.Trim());
+        var info = await _priceService.SearchCoinAsync(query.Trim()).ConfigureAwait(false);
         if (info is null)
             return $"No coin found for \"{query}\".";
 
@@ -100,7 +91,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         await Dispatcher.UIThread.InvokeAsync(() =>
             AddCoinToCollection(info.Id, info.Symbol, info.Name));
 
-        await RefreshAsync();
+        await RefreshAsync().ConfigureAwait(false);
         return null;
     }
 
@@ -128,25 +119,17 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         if (!Coins.Any()) return;
 
         var ids = Coins.Select(c => c.CoinId).ToList();
-        var prices = await _priceService.GetPricesAsync(ids);
+        var prices = await _priceService.GetPricesAsync(ids).ConfigureAwait(false);
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            if (prices is null)
-            {
-                StatusColor = "#E05555";
-                LastUpdated = "Error – retrying…";
-                return;
-            }
-
             foreach (var coin in Coins)
             {
-                if (prices.TryGetValue(coin.CoinId, out var price))
+                if (prices is not null && prices.TryGetValue(coin.CoinId, out var price))
                     coin.SetPrice(price);
+                else
+                    coin.MarkSyncFailed();
             }
-
-            LastUpdated = $"Updated {DateTime.Now:HH:mm:ss}";
-            StatusColor = "#4CAF50";
         });
 
         // Persist updated prices so they're shown immediately on next launch
@@ -157,5 +140,9 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private void OnPropertyChanged([CallerMemberName] string? name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-    public void Dispose() => _timer.Dispose();
+    public void Dispose()
+    {
+        _timer.Dispose();
+        _clockTimer.Stop();
+    }
 }

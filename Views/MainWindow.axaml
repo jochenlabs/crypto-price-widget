@@ -120,9 +120,15 @@
                                  Classes="coin-symbol" />
                       <TextBlock Text="{Binding Price}"
                                  Classes="coin-price" />
-                      <TextBlock Text="{Binding LastUpdatedText}"
-                                 Foreground="#3DFFFFFF"
-                                 FontSize="9" />
+                      <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                        <Ellipse Width="5" Height="5"
+                                 Fill="{Binding SyncDotColor}"
+                                 VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding LastUpdatedText}"
+                                   Foreground="#3DFFFFFF"
+                                   FontSize="9"
+                                   VerticalAlignment="Center" />
+                      </StackPanel>
                     </StackPanel>
                     <Rectangle Classes="divider" />
                   </StackPanel>
@@ -130,15 +136,6 @@
               </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- Status dot + timestamp -->
-            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-              <Ellipse Width="6" Height="6"
-                       Fill="{Binding StatusColor}"
-                       VerticalAlignment="Center" />
-              <TextBlock Text="{Binding LastUpdated}"
-                         Classes="coin-symbol"
-                         VerticalAlignment="Center" />
-            </StackPanel>
 
           </StackPanel>
 

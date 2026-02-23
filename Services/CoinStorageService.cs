@@ -27,7 +27,7 @@ public class CoinStorageService
             if (!File.Exists(FilePath))
                 return GetDefaults();
 
-            var json = await File.ReadAllTextAsync(FilePath);
+            var json = await File.ReadAllTextAsync(FilePath).ConfigureAwait(false);
             var list = JsonSerializer.Deserialize<List<SavedCoin>>(json);
             return list?.Count > 0 ? list : GetDefaults();
         }
@@ -44,7 +44,7 @@ public class CoinStorageService
 
         var json = JsonSerializer.Serialize(coins,
             new JsonSerializerOptions { WriteIndented = true });
-        await File.WriteAllTextAsync(FilePath, json);
+        await File.WriteAllTextAsync(FilePath, json).ConfigureAwait(false);
     }
 
     public static List<SavedCoin> GetDefaults() =>
