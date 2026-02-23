@@ -6,9 +6,9 @@
         Title="Crypto Prices"
         SizeToContent="Width"
         MinWidth="400"
-        Height="52"
-        MinHeight="52"
-        MaxHeight="52"
+        Height="64"
+        MinHeight="64"
+        MaxHeight="64"
         CanResize="False"
         SystemDecorations="BorderOnly"
         Background="Transparent"
@@ -68,12 +68,11 @@
 
             <Button Classes="icon"
                     Width="26" Height="26"
-                    Foreground="#4CAF50"
-                    FontSize="17"
-                    FontWeight="Bold"
-                    ToolTip.Tip="Add coin"
-                    Click="AddCoin_Click">
-              <TextBlock Text="+" FontSize="17" FontWeight="Bold" />
+                    Foreground="#AAAAAA"
+                    FontSize="14"
+                    ToolTip.Tip="Manage coins"
+                    Click="ManageCoins_Click">
+              <TextBlock Text="⚙" FontSize="14" />
             </Button>
 
             <Button x:Name="PinButton"
@@ -116,22 +115,15 @@
                                FontSize="14"
                                FontWeight="Bold"
                                VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding Symbol}"
-                               Classes="coin-symbol"
-                               VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding Price}"
-                               Classes="coin-price"
-                               VerticalAlignment="Center" />
-                    <!-- Remove tile button -->
-                    <Button Classes="icon"
-                            Width="14" Height="14"
-                            Foreground="#444444"
-                            FontSize="9"
-                            VerticalAlignment="Center"
-                            ToolTip.Tip="Remove"
-                            Click="RemoveCoin_Click">
-                      <TextBlock Text="×" FontSize="9" />
-                    </Button>
+                    <StackPanel Orientation="Vertical" Spacing="0" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Symbol}"
+                                 Classes="coin-symbol" />
+                      <TextBlock Text="{Binding Price}"
+                                 Classes="coin-price" />
+                      <TextBlock Text="{Binding LastUpdatedText}"
+                                 Foreground="#3DFFFFFF"
+                                 FontSize="9" />
+                    </StackPanel>
                     <Rectangle Classes="divider" />
                   </StackPanel>
                 </DataTemplate>

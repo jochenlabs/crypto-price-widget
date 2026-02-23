@@ -42,9 +42,9 @@ public partial class MainWindow : Window
         if (PinButton is null) return;
         if (_isPinned)
         {
-            PinButton.Background      = new SolidColorBrush(Color.Parse("#F7931A"));
+            PinButton.Background      = new SolidColorBrush(Color.Parse("#5f5f5f"));
             PinButton.Foreground      = new SolidColorBrush(Colors.White);
-            PinButton.BorderBrush     = new SolidColorBrush(Color.Parse("#FFB347"));
+            PinButton.BorderBrush     = new SolidColorBrush(Color.Parse("#5f5f5f"));
             PinButton.BorderThickness = new Thickness(1);
             ToolTip.SetTip(PinButton, "Pinned — click to unpin");
         }
@@ -83,16 +83,10 @@ public partial class MainWindow : Window
 
     private void CloseButton_Click(object? sender, RoutedEventArgs e) => Close();
 
-    private void AddCoin_Click(object? sender, RoutedEventArgs e)
+    private void ManageCoins_Click(object? sender, RoutedEventArgs e)
     {
-        var dialog = new AddCoinDialog(_vm) { Topmost = true };
+        var dialog = new ManageCoinsWindow(_vm) { Topmost = true };
         dialog.ShowDialog(this);
-    }
-
-    private void RemoveCoin_Click(object? sender, RoutedEventArgs e)
-    {
-        if (sender is Button { DataContext: CoinTileViewModel coin })
-            _vm.RemoveCoin(coin);
     }
 
     private void DragRegion_PointerPressed(object? sender, PointerPressedEventArgs e)

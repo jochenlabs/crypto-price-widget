@@ -59,7 +59,34 @@ public class CoinTileViewModel : INotifyPropertyChanged
     public string Price
     {
         get => _price;
-        set { if (_price != value) { _price = value; OnPropertyChanged(); } }
+        private set { if (_price != value) { _price = value; OnPropertyChanged(); } }
+    }
+
+    private decimal? _priceRaw;
+    private DateTime? _priceUpdatedAt;
+
+    public decimal? PriceRaw       => _priceRaw;
+    public DateTime? PriceUpdatedAt => _priceUpdatedAt;
+
+    public string LastUpdatedText =>
+        _priceUpdatedAt.HasValue ? _priceUpdatedAt.Value.ToString("HH:mm:ss") : "–";
+
+    /// <summary>Called by the refresh loop with a live price.</summary>
+    public void SetPrice(decimal price)
+    {
+        _priceRaw       = price;
+        _priceUpdatedAt = DateTime.Now;
+        Price           = $"${price:N2}";
+        OnPropertyChanged(nameof(LastUpdatedText));
+    }
+
+    /// <summary>Called on startup to restore the last persisted price.</summary>
+    public void LoadCachedPrice(decimal price, DateTime updatedAt)
+    {
+        _priceRaw       = price;
+        _priceUpdatedAt = updatedAt;
+        Price           = $"${price:N2}";
+        OnPropertyChanged(nameof(LastUpdatedText));
     }
 
     // Called by the remove (×) button in the UI

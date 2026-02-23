@@ -1,0 +1,213 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CryptoPriceWidget.ViewModels"
+        x:Class="CryptoPriceWidget.Views.ManageCoinsWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Manage Coins"
+        Width="380"
+        Height="500"
+        MinWidth="320"
+        MinHeight="320"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        Background="#12122A"
+        ShowInTaskbar="False">
+
+  <Window.Styles>
+
+    <Style Selector="TextBlock.heading">
+      <Setter Property="Foreground"  Value="#EEEEEE" />
+      <Setter Property="FontSize"    Value="15" />
+      <Setter Property="FontWeight"  Value="SemiBold" />
+    </Style>
+
+    <Style Selector="TextBlock.sub">
+      <Setter Property="Foreground" Value="#888888" />
+      <Setter Property="FontSize"   Value="11" />
+    </Style>
+
+    <Style Selector="TextBox">
+      <Setter Property="Background"       Value="#0D0D1E" />
+      <Setter Property="Foreground"       Value="#EEEEEE" />
+      <Setter Property="CaretBrush"       Value="#EEEEEE" />
+      <Setter Property="BorderBrush"      Value="#33FFFFFF" />
+      <Setter Property="BorderThickness"  Value="1" />
+      <Setter Property="CornerRadius"     Value="6" />
+      <Setter Property="Padding"          Value="8 6" />
+      <Setter Property="FontSize"         Value="13" />
+    </Style>
+
+    <Style Selector="Button.icon-sm">
+      <Setter Property="Background"      Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding"         Value="0" />
+      <Setter Property="CornerRadius"    Value="4" />
+      <Setter Property="Width"           Value="24" />
+      <Setter Property="Height"          Value="24" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment"   Value="Center" />
+    </Style>
+
+    <Style Selector="Button.icon-sm:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#22FFFFFF" />
+    </Style>
+
+    <Style Selector="Button.primary">
+      <Setter Property="Background"   Value="#F7931A" />
+      <Setter Property="Foreground"   Value="White" />
+      <Setter Property="FontWeight"   Value="SemiBold" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding"      Value="14 6" />
+    </Style>
+
+    <Style Selector="Button.danger">
+      <Setter Property="Background"   Value="Transparent" />
+      <Setter Property="Foreground"   Value="#E05555" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding"      Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Width"        Value="24" />
+      <Setter Property="Height"       Value="24" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment"   Value="Center" />
+    </Style>
+
+    <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#33E05555" />
+    </Style>
+
+    <Style Selector="ListBoxItem">
+      <Setter Property="Background"  Value="Transparent" />
+      <Setter Property="Padding"     Value="0" />
+    </Style>
+
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="#22FFFFFF" />
+    </Style>
+
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#11FFFFFF" />
+    </Style>
+
+  </Window.Styles>
+
+  <DockPanel Margin="16" LastChildFill="True">
+
+    <!-- ── Header ─────────────────────────────────────────────── -->
+    <StackPanel DockPanel.Dock="Top" Spacing="2" Margin="0 0 0 12">
+      <TextBlock Classes="heading" Text="Manage Coins" />
+      <TextBlock Classes="sub">
+        <Run Text="Coins are saved to " />
+        <Run x:Name="FilePathRun" Text="…" Foreground="#555577" />
+      </TextBlock>
+    </StackPanel>
+
+    <!-- ── Add coin row ───────────────────────────────────────── -->
+    <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0 12 0 0">
+
+      <TextBlock x:Name="StatusText"
+                 Text=""
+                 Foreground="#E05555"
+                 FontSize="11"
+                 TextWrapping="Wrap"
+                 IsVisible="False" />
+
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBox Grid.Column="0"
+                 x:Name="SearchBox"
+                 Watermark="Coin name or symbol  (e.g. solana, SOL)"
+                 KeyDown="SearchBox_KeyDown" />
+        <Button Grid.Column="1"
+                x:Name="AddButton"
+                Classes="primary"
+                Content="Add"
+                Margin="8 0 0 0"
+                Click="Add_Click" />
+      </Grid>
+
+    </StackPanel>
+
+    <!-- ── Divider ────────────────────────────────────────────── -->
+    <Rectangle DockPanel.Dock="Bottom"
+               Height="1"
+               Fill="#22FFFFFF"
+               Margin="0 10 0 0" />
+
+    <!-- ── Coin list ──────────────────────────────────────────── -->
+    <ListBox x:Name="CoinList"
+             ItemsSource="{Binding Coins}"
+             Background="Transparent"
+             BorderThickness="1"
+             BorderBrush="#22FFFFFF"
+             CornerRadius="8"
+             Padding="4">
+
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:CoinTileViewModel">
+          <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto"
+                Margin="4 3"
+                VerticalAlignment="Center">
+
+            <!-- Move Up -->
+            <Button Grid.Column="0"
+                    Classes="icon-sm"
+                    ToolTip.Tip="Move up"
+                    Click="MoveUp_Click">
+              <TextBlock Text="▲" FontSize="10" Foreground="#AAAAAA" />
+            </Button>
+
+            <!-- Move Down -->
+            <Button Grid.Column="1"
+                    Classes="icon-sm"
+                    ToolTip.Tip="Move down"
+                    Click="MoveDown_Click"
+                    Margin="2 0 0 0">
+              <TextBlock Text="▼" FontSize="10" Foreground="#AAAAAA" />
+            </Button>
+
+            <!-- Glyph + Name + Symbol -->
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        Spacing="6"
+                        VerticalAlignment="Center"
+                        Margin="8 0">
+              <TextBlock Text="{Binding Glyph}"
+                         Foreground="{Binding AccentBrush}"
+                         FontSize="15"
+                         FontWeight="Bold"
+                         VerticalAlignment="Center" />
+              <TextBlock Text="{Binding Name}"
+                         Foreground="#EEEEEE"
+                         FontSize="13"
+                         VerticalAlignment="Center" />
+              <TextBlock Text="{Binding Symbol}"
+                         Foreground="#666666"
+                         FontSize="11"
+                         VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Price (read-only display) -->
+            <TextBlock Grid.Column="3"
+                       Text="{Binding Price}"
+                       Foreground="#FFFFFF"
+                       FontSize="13"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Margin="0 0 8 0" />
+
+            <!-- Remove -->
+            <Button Grid.Column="4"
+                    Classes="danger"
+                    ToolTip.Tip="Remove"
+                    Click="Remove_Click">
+              <TextBlock Text="✕" FontSize="11" />
+            </Button>
+
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+  </DockPanel>
+
+</Window>
