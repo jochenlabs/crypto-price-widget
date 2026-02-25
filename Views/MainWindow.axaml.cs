@@ -1,9 +1,11 @@
 using System.Collections.Specialized;
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
+using Avalonia.Layout;
 using Avalonia.Threading;
 using CryptoPriceWidget.ViewModels;
 
@@ -11,7 +13,6 @@ namespace CryptoPriceWidget.Views;
 
 public partial class MainWindow : Window
 {
-    private bool _isPinned = true;
     private MainViewModel _vm = null!;
 
     public MainWindow()
@@ -22,6 +23,15 @@ public partial class MainWindow : Window
 
         // Reposition whenever coins are added/removed (window width changes)
         _vm.Coins.CollectionChanged += OnCoinsChanged;
+        _vm.PropertyChanged += OnViewModelPropertyChanged;
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.IsVertical))
+            Dispatcher.UIThread.Post(() => ApplyOrientation(_vm.IsVertical));
+        if (e.PropertyName == nameof(MainViewModel.IsTopmost))
+            Dispatcher.UIThread.Post(() => Topmost = _vm.IsTopmost);
     }
 
     private void OnCoinsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -33,29 +43,42 @@ public partial class MainWindow : Window
     protected override void OnOpened(System.EventArgs e)
     {
         base.OnOpened(e);
-        Dispatcher.UIThread.Post(PositionAtCenterTop, DispatcherPriority.Render);
-        ApplyPinVisuals();
+        Topmost = _vm.IsTopmost;
+        ApplyOrientation(_vm.IsVertical);
     }
 
-    private void ApplyPinVisuals()
+    private void ApplyOrientation(bool isVertical)
     {
-        if (PinButton is null) return;
-        if (_isPinned)
+        if (isVertical)
         {
-            PinButton.Background      = new SolidColorBrush(Color.Parse("#5f5f5f"));
-            PinButton.Foreground      = new SolidColorBrush(Colors.White);
-            PinButton.BorderBrush     = new SolidColorBrush(Color.Parse("#5f5f5f"));
-            PinButton.BorderThickness = new Thickness(1);
-            ToolTip.SetTip(PinButton, "Pinned — click to unpin");
+            SizeToContent = SizeToContent.WidthAndHeight;
+            Width     = double.NaN;
+            MinWidth  = 100;
+            MaxWidth  = double.PositiveInfinity;
+            MinHeight = 80;
+            MaxHeight = double.PositiveInfinity;
+            DockPanel.SetDock(ButtonsPanel, Dock.Bottom);
+            ButtonsPanel.HorizontalAlignment = HorizontalAlignment.Center;
+            CoinItemsControl.ItemsPanel = new FuncTemplate<Panel?>(
+                () => new StackPanel { Orientation = Orientation.Vertical });
+            CoinItemsControl.ItemTemplate = (IDataTemplate)this.Resources["VerticalTileTemplate"]!;
         }
         else
         {
-            PinButton.Background      = new SolidColorBrush(Colors.Transparent);
-            PinButton.Foreground      = new SolidColorBrush(Color.Parse("#555555"));
-            PinButton.BorderBrush     = new SolidColorBrush(Colors.Transparent);
-            PinButton.BorderThickness = new Thickness(0);
-            ToolTip.SetTip(PinButton, "Always on top");
+            SizeToContent = SizeToContent.Width;
+            Width     = double.NaN;
+            MinWidth  = 400;
+            MaxWidth  = double.PositiveInfinity;
+            Height    = 64;
+            MinHeight = 64;
+            MaxHeight = 64;
+            DockPanel.SetDock(ButtonsPanel, Dock.Right);
+            ButtonsPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
+            CoinItemsControl.ItemsPanel = new FuncTemplate<Panel?>(
+                () => new StackPanel { Orientation = Orientation.Horizontal });
+            CoinItemsControl.ItemTemplate = (IDataTemplate)this.Resources["HorizontalTileTemplate"]!;
         }
+        Dispatcher.UIThread.Post(PositionAtCenterTop, DispatcherPriority.Render);
     }
 
     private void PositionAtCenterTop()
@@ -74,13 +97,6 @@ public partial class MainWindow : Window
         Position = new PixelPoint((int)physX, (int)physY);
     }
 
-    private void PinButton_Click(object? sender, RoutedEventArgs e)
-    {
-        _isPinned = !_isPinned;
-        Topmost = _isPinned;
-        ApplyPinVisuals();
-    }
-
     private void CloseButton_Click(object? sender, RoutedEventArgs e) => Close();
 
     private void Refresh_Click(object? sender, RoutedEventArgs e)
@@ -92,7 +108,7 @@ public partial class MainWindow : Window
 
     private void ManageCoins_Click(object? sender, RoutedEventArgs e)
     {
-        var dialog = new ManageCoinsWindow(_vm) { Topmost = true };
+        var dialog = new ManageWindow(_vm) { Topmost = true };
         dialog.ShowDialog(this);
     }
 

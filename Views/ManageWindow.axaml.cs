@@ -6,15 +6,15 @@ using CryptoPriceWidget.ViewModels;
 
 namespace CryptoPriceWidget.Views;
 
-public partial class ManageCoinsWindow : Window
+public partial class ManageWindow : Window
 {
     private readonly MainViewModel _vm;
     private bool _busy;
 
     // Design-time constructor
-    public ManageCoinsWindow() : this(new MainViewModel()) { }
+    public ManageWindow() : this(new MainViewModel()) { }
 
-    public ManageCoinsWindow(MainViewModel vm)
+    public ManageWindow(MainViewModel vm)
     {
         InitializeComponent();
         _vm = vm;

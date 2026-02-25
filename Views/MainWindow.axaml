@@ -18,6 +18,51 @@
         WindowStartupLocation="Manual"
         Topmost="True">
 
+  <!-- ── Tile templates ────────────────────────────────────── -->
+  <Window.Resources>
+
+    <!-- Horizontal tile: glyph / stacked symbol–price–timestamp + vertical divider -->
+    <DataTemplate x:Key="HorizontalTileTemplate" x:DataType="vm:CoinTileViewModel">
+      <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+        <TextBlock Text="{Binding Glyph}"
+                   Foreground="{Binding AccentBrush}"
+                   FontSize="14" FontWeight="Bold"
+                   VerticalAlignment="Center" />
+        <StackPanel Orientation="Vertical" Spacing="0" VerticalAlignment="Center">
+          <TextBlock Text="{Binding Symbol}" Classes="coin-symbol" />
+          <TextBlock Text="{Binding Price}"  Classes="coin-price" />
+          <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+            <Ellipse Width="5" Height="5" Fill="{Binding SyncDotColor}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding LastUpdatedText}" Foreground="#3DFFFFFF" FontSize="9" VerticalAlignment="Center" />
+          </StackPanel>
+        </StackPanel>
+        <Rectangle Classes="divider" />
+      </StackPanel>
+    </DataTemplate>
+
+    <!-- Vertical tile: same as horizontal but stacked, horizontal separator instead of vertical -->
+    <DataTemplate x:Key="VerticalTileTemplate" x:DataType="vm:CoinTileViewModel">
+      <StackPanel Orientation="Vertical" Margin="0">
+        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center" Margin="6 4">
+          <TextBlock Text="{Binding Glyph}"
+                     Foreground="{Binding AccentBrush}"
+                     FontSize="14" FontWeight="Bold"
+                     VerticalAlignment="Center" />
+          <StackPanel Orientation="Vertical" Spacing="0" VerticalAlignment="Center">
+            <TextBlock Text="{Binding Symbol}" Classes="coin-symbol" />
+            <TextBlock Text="{Binding Price}"  Classes="coin-price" />
+            <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+              <Ellipse Width="5" Height="5" Fill="{Binding SyncDotColor}" VerticalAlignment="Center" />
+              <TextBlock Text="{Binding LastUpdatedText}" Foreground="#3DFFFFFF" FontSize="9" VerticalAlignment="Center" />
+            </StackPanel>
+          </StackPanel>
+        </StackPanel>
+        <Rectangle Height="1" Fill="#33FFFFFF" />
+      </StackPanel>
+    </DataTemplate>
+
+  </Window.Resources>
+
   <Window.Styles>
     <Style Selector="TextBlock.coin-symbol">
       <Setter Property="Foreground" Value="#888888" />
@@ -64,7 +109,7 @@
         <DockPanel Margin="10 0" LastChildFill="True">
 
           <!-- Right: Add / Pin / Close buttons -->
-          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+          <StackPanel x:Name="ButtonsPanel" DockPanel.Dock="Right" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
 
 
             <Button x:Name="RefreshButton"
@@ -85,16 +130,6 @@
               <TextBlock Text="⚙" FontSize="14" />
             </Button>
 
-            <Button x:Name="PinButton"
-                    Classes="icon"
-                    Width="26" Height="26"
-                    Foreground="#555555"
-                    FontSize="12"
-                    ToolTip.Tip="Always on top"
-                    Click="PinButton_Click">
-              <TextBlock Text="📌" FontSize="12" />
-            </Button>
-
             <Button Classes="icon"
                     Width="26" Height="26"
                     Foreground="#888888"
@@ -111,39 +146,14 @@
                       Spacing="0">
 
             <!-- Dynamic coin tiles -->
-            <ItemsControl ItemsSource="{Binding Coins}">
+            <ItemsControl x:Name="CoinItemsControl"
+                          ItemsSource="{Binding Coins}"
+                          ItemTemplate="{StaticResource HorizontalTileTemplate}">
               <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                   <StackPanel Orientation="Horizontal" />
                 </ItemsPanelTemplate>
               </ItemsControl.ItemsPanel>
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:CoinTileViewModel">
-                  <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Glyph}"
-                               Foreground="{Binding AccentBrush}"
-                               FontSize="14"
-                               FontWeight="Bold"
-                               VerticalAlignment="Center" />
-                    <StackPanel Orientation="Vertical" Spacing="0" VerticalAlignment="Center">
-                      <TextBlock Text="{Binding Symbol}"
-                                 Classes="coin-symbol" />
-                      <TextBlock Text="{Binding Price}"
-                                 Classes="coin-price" />
-                      <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
-                        <Ellipse Width="5" Height="5"
-                                 Fill="{Binding SyncDotColor}"
-                                 VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding LastUpdatedText}"
-                                   Foreground="#3DFFFFFF"
-                                   FontSize="9"
-                                   VerticalAlignment="Center" />
-                      </StackPanel>
-                    </StackPanel>
-                    <Rectangle Classes="divider" />
-                  </StackPanel>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
             </ItemsControl>
 
 

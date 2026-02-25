@@ -15,9 +15,41 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 {
     private readonly CryptoPriceService _priceService = new();
     private readonly CoinStorageService _storage = new();
+    private readonly SettingsService _settingsService = new();
     private readonly Timer _timer;
     private readonly DispatcherTimer _clockTimer;
     private bool _initializing = true;
+
+    private bool _isVertical;
+    public bool IsVertical
+    {
+        get => _isVertical;
+        set
+        {
+            if (_isVertical == value) return;
+            _isVertical = value;
+            OnPropertyChanged();
+            SaveSettings();
+        }
+    }
+
+    private bool _isTopmost = true;
+    public bool IsTopmost
+    {
+        get => _isTopmost;
+        set
+        {
+            if (_isTopmost == value) return;
+            _isTopmost = value;
+            OnPropertyChanged();
+            SaveSettings();
+        }
+    }
+
+    private void SaveSettings()
+    {
+        _ = _settingsService.SaveAsync(new AppSettings(IsVertical: _isVertical, IsTopmost: _isTopmost)).ConfigureAwait(false);
+    }
 
     public ObservableCollection<CoinTileViewModel> Coins { get; } = new();
 
@@ -39,10 +71,16 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
     private async Task InitializeAsync()
     {
-        var saved = await _storage.LoadAsync().ConfigureAwait(false);
+        var settings = await _settingsService.LoadAsync().ConfigureAwait(false);
+        var saved    = await _storage.LoadAsync().ConfigureAwait(false);
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
+            _isVertical = settings.IsVertical;
+            OnPropertyChanged(nameof(IsVertical));
+            _isTopmost = settings.IsTopmost;
+            OnPropertyChanged(nameof(IsTopmost));
+
             foreach (var s in saved)
                 AddCoinToCollection(s.Id, s.Symbol, s.Name, s.LastPrice, s.LastUpdatedAt);
 

@@ -1,9 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:CryptoPriceWidget.ViewModels"
-        x:Class="CryptoPriceWidget.Views.ManageCoinsWindow"
+        x:Class="CryptoPriceWidget.Views.ManageWindow"
         x:DataType="vm:MainViewModel"
-        Title="Manage Coins"
+        Title="Manage"
         Width="380"
         Height="500"
         MinWidth="320"
@@ -95,12 +95,30 @@
 
     <!-- ── Header ─────────────────────────────────────────────── -->
     <StackPanel DockPanel.Dock="Top" Spacing="2" Margin="0 0 0 12">
-      <TextBlock Classes="heading" Text="Manage Coins" />
+      <TextBlock Classes="heading" Text="Manage" />
       <TextBlock Classes="sub">
         <Run Text="Coins are saved to " />
         <Run x:Name="FilePathRun" Text="…" Foreground="#6e6e6e" />
       </TextBlock>
     </StackPanel>
+
+    <!-- ── Display settings ───────────────────────────────────── -->
+    <CheckBox DockPanel.Dock="Top"
+              Content="Vertical layout"
+              IsChecked="{Binding IsVertical}"
+              Foreground="#EEEEEE"
+              FontSize="13"
+              Margin="0 0 0 4" />
+
+    <CheckBox DockPanel.Dock="Top"
+              Content="Always on top"
+              IsChecked="{Binding IsTopmost}"
+              Foreground="#EEEEEE"
+              FontSize="13"
+              Margin="0 0 0 8" />
+
+    <!-- ── Divider below settings ──────────────────────────────── -->
+    <Rectangle DockPanel.Dock="Top" Height="1" Fill="#22FFFFFF" Margin="0 0 0 12" />
 
     <!-- ── Add coin row ───────────────────────────────────────── -->
     <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0 12 0 0">
