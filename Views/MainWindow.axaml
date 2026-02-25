@@ -56,10 +56,10 @@
     </ExperimentalAcrylicBorder>
 
     <!-- Pill border -->
-    <Border BorderThickness="1">
-
+    <Border BorderThickness="0">
+    
       <!-- Full-area drag surface -->
-      <Border Background="#01000000" PointerPressed="DragRegion_PointerPressed">
+      <Border Background="#202020" PointerPressed="DragRegion_PointerPressed">
 
         <DockPanel Margin="10 0" LastChildFill="True">
 
