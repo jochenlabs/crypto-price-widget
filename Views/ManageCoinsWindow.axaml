@@ -10,7 +10,7 @@
         MinHeight="320"
         CanResize="True"
         WindowStartupLocation="CenterOwner"
-        Background="#12122A"
+        Background="#202020"
         ShowInTaskbar="False">
 
   <Window.Styles>
@@ -27,7 +27,7 @@
     </Style>
 
     <Style Selector="TextBox">
-      <Setter Property="Background"       Value="#0D0D1E" />
+      <Setter Property="Background"       Value="#202020" />
       <Setter Property="Foreground"       Value="#EEEEEE" />
       <Setter Property="CaretBrush"       Value="#EEEEEE" />
       <Setter Property="BorderBrush"      Value="#33FFFFFF" />
@@ -98,7 +98,7 @@
       <TextBlock Classes="heading" Text="Manage Coins" />
       <TextBlock Classes="sub">
         <Run Text="Coins are saved to " />
-        <Run x:Name="FilePathRun" Text="…" Foreground="#555577" />
+        <Run x:Name="FilePathRun" Text="…" Foreground="#6e6e6e" />
       </TextBlock>
     </StackPanel>
 

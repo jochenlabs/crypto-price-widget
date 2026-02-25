@@ -29,13 +29,50 @@ public class CoinStorageService
 
             var json = await File.ReadAllTextAsync(FilePath).ConfigureAwait(false);
             var list = JsonSerializer.Deserialize<List<SavedCoin>>(json);
-            return list?.Count > 0 ? list : GetDefaults();
+            if (list?.Count > 0)
+            {
+                // Migrate old CoinGecko IDs (lowercase/hyphenated) to Binance symbols
+                bool migrated = false;
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var mapped = MapCoinGeckoId(list[i].Id);
+                    if (mapped != null)
+                    {
+                        list[i] = list[i] with { Id = mapped, Symbol = mapped };
+                        migrated = true;
+                    }
+                }
+                if (migrated) await SaveAsync(list).ConfigureAwait(false);
+                return list;
+            }
+            return GetDefaults();
         }
         catch
         {
             return GetDefaults();
         }
     }
+
+    private static string? MapCoinGeckoId(string id) => id switch
+    {
+        "bitcoin"     => "BTC",
+        "ethereum"    => "ETH",
+        "solana"      => "SOL",
+        "cardano"     => "ADA",
+        "ripple"      => "XRP",
+        "dogecoin"    => "DOGE",
+        "litecoin"    => "LTC",
+        "binancecoin" => "BNB",
+        "polkadot"    => "DOT",
+        "avalanche-2" => "AVAX",
+        "chainlink"   => "LINK",
+        "uniswap"     => "UNI",
+        "stellar"     => "XLM",
+        "monero"      => "XMR",
+        // already a Binance symbol — no migration needed
+        _ when !id.Contains('-') && id == id.ToUpperInvariant() => null,
+        _ => null
+    };
 
     public async Task SaveAsync(IEnumerable<SavedCoin> coins)
     {
@@ -49,8 +86,8 @@ public class CoinStorageService
 
     public static List<SavedCoin> GetDefaults() =>
     [
-        new("bitcoin",  "BTC", "Bitcoin"),
-        new("ethereum", "ETH", "Ethereum"),
-        new("solana",   "SOL", "Solana")
+        new("BTC", "BTC", "Bitcoin"),
+        new("ETH", "ETH", "Ethereum"),
+        new("SOL", "SOL", "Solana"),
     ];
 }

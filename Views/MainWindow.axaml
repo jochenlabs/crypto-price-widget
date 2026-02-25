@@ -11,7 +11,7 @@
         MaxHeight="64"
         CanResize="False"
         SystemDecorations="BorderOnly"
-        Background="Transparent"
+        Background="#202020"
         TransparencyLevelHint="AcrylicBlur"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
@@ -45,18 +45,18 @@
 
   <Panel>
     <!-- Acrylic background -->
-    <ExperimentalAcrylicBorder IsHitTestVisible="False" CornerRadius="12">
+    <ExperimentalAcrylicBorder IsHitTestVisible="False">
       <ExperimentalAcrylicBorder.Material>
         <ExperimentalAcrylicMaterial
           BackgroundSource="Digger"
-          TintColor="#12122A"
+          TintColor="#202020"
           TintOpacity="0.92"
           MaterialOpacity="0.98" />
       </ExperimentalAcrylicBorder.Material>
     </ExperimentalAcrylicBorder>
 
     <!-- Pill border -->
-    <Border CornerRadius="12" BorderBrush="#33FFFFFF" BorderThickness="1">
+    <Border BorderThickness="1">
 
       <!-- Full-area drag surface -->
       <Border Background="#01000000" PointerPressed="DragRegion_PointerPressed">

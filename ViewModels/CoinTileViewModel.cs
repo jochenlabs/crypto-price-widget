@@ -9,40 +9,41 @@ namespace CryptoPriceWidget.ViewModels;
 public class CoinTileViewModel : INotifyPropertyChanged
 {
     // ── static lookup tables ──────────────────────────────────────────
+    // Keys are Binance base asset symbols (uppercase), e.g. "BTC", "ETH"
     private static readonly Dictionary<string, string> GlyphMap = new()
     {
-        ["bitcoin"]        = "₿",
-        ["ethereum"]       = "Ξ",
-        ["solana"]         = "◎",
-        ["cardano"]        = "₳",
-        ["ripple"]         = "✕",
-        ["dogecoin"]       = "Ð",
-        ["litecoin"]       = "Ł",
-        ["binancecoin"]    = "BNB",
-        ["polkadot"]       = "●",
-        ["avalanche-2"]    = "Av",
-        ["chainlink"]      = "⬡",
-        ["uniswap"]        = "🦄",
-        ["stellar"]        = "✦",
-        ["monero"]         = "ɱ",
+        ["BTC"]  = "₿",
+        ["ETH"]  = "Ξ",
+        ["SOL"]  = "◎",
+        ["ADA"]  = "₳",
+        ["XRP"]  = "✕",
+        ["DOGE"] = "Ð",
+        ["LTC"]  = "Ł",
+        ["BNB"]  = "BNB",
+        ["DOT"]  = "●",
+        ["AVAX"] = "Av",
+        ["LINK"] = "⬡",
+        ["UNI"]  = "🦄",
+        ["XLM"]  = "✦",
+        ["XMR"]  = "ɱ",
     };
 
     private static readonly Dictionary<string, string> ColorMap = new()
     {
-        ["bitcoin"]        = "#F7931A",
-        ["ethereum"]       = "#627EEA",
-        ["solana"]         = "#9945FF",
-        ["cardano"]        = "#0033AD",
-        ["ripple"]         = "#00AAE4",
-        ["dogecoin"]       = "#C2A633",
-        ["litecoin"]       = "#BFBBBB",
-        ["binancecoin"]    = "#F3BA2F",
-        ["polkadot"]       = "#E6007A",
-        ["avalanche-2"]    = "#E84142",
-        ["chainlink"]      = "#2A5ADA",
-        ["uniswap"]        = "#FF007A",
-        ["stellar"]        = "#7AC4DE",
-        ["monero"]         = "#FF6600",
+        ["BTC"]  = "#F7931A",
+        ["ETH"]  = "#627EEA",
+        ["SOL"]  = "#9945FF",
+        ["ADA"]  = "#0033AD",
+        ["XRP"]  = "#00AAE4",
+        ["DOGE"] = "#C2A633",
+        ["LTC"]  = "#BFBBBB",
+        ["BNB"]  = "#F3BA2F",
+        ["DOT"]  = "#E6007A",
+        ["AVAX"] = "#E84142",
+        ["LINK"] = "#2A5ADA",
+        ["UNI"]  = "#FF007A",
+        ["XLM"]  = "#7AC4DE",
+        ["XMR"]  = "#FF6600",
     };
 
     // ── properties ────────────────────────────────────────────────────

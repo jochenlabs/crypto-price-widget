@@ -12,49 +12,29 @@ public record CoinInfo(string Id, string Symbol, string Name);
 
 public class CryptoPriceService
 {
-    // Spacing between individual coin requests to stay within the free-tier rate limit
-    private static readonly TimeSpan RequestDelay = TimeSpan.FromMilliseconds(1500);
-
     private static readonly HttpClient _client = new()
     {
         DefaultRequestHeaders = { { "User-Agent", "CryptoPriceWidget/1.0" } }
     };
 
-    // Fetch prices — one request per coin ID with rate-limit awareness
+    // Fetch prices for all coin IDs in one batch request.
+    // CoinId is the Binance base asset symbol, e.g. "BTC" → queries BTCUSDT.
     public async Task<Dictionary<string, decimal>?> GetPricesAsync(IEnumerable<string> coinIds)
     {
-        var result = new Dictionary<string, decimal>();
-        bool anyError = false;
-        bool first = true;
+        var ids = coinIds.ToList();
+        if (ids.Count == 0) return new();
 
-        foreach (var coinId in coinIds)
-        {
-            // Throttle: wait between requests (skip before the very first one)
-            if (!first)
-                await Task.Delay(RequestDelay).ConfigureAwait(false);
-            first = false;
-
-            decimal? price = await FetchPriceWithRetryAsync(coinId).ConfigureAwait(false);
-            if (price.HasValue)
-                result[coinId] = price.Value;
-            else
-                anyError = true;
-        }
-
-        // Return null only if every request failed
-        return result.Count == 0 && anyError ? null : result;
-    }
-
-    private async Task<decimal?> FetchPriceWithRetryAsync(string coinId)
-    {
         try
         {
-            var url = $"https://api.coingecko.com/api/v3/simple/price?ids={coinId}&vs_currencies=usd";
+            // Build JSON array of symbols: ["BTCUSDT","ETHUSDT"]
+            var symbolsJson = "[" + string.Join(",", ids.Select(id => $"\"{id}USDT\"")) + "]";
+            var url = $"https://api.binance.com/api/v3/ticker/price?symbols={Uri.EscapeDataString(symbolsJson)}";
+
             using var response = await _client.GetAsync(url).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                Console.Error.WriteLine($"[CryptoPriceService] 429 for {coinId} — skipping, will retry next cycle.");
+                Console.Error.WriteLine("[CryptoPriceService] 429 from Binance — will retry next cycle.");
                 return null;
             }
 
@@ -62,41 +42,64 @@ public class CryptoPriceService
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             using var doc = JsonDocument.Parse(json);
 
-            if (doc.RootElement.TryGetProperty(coinId, out var coinEl) &&
-                coinEl.TryGetProperty("usd", out var priceEl))
-                return priceEl.GetDecimal();
-
-            return null;
+            var result = new Dictionary<string, decimal>();
+            foreach (var item in doc.RootElement.EnumerateArray())
+            {
+                var sym    = item.GetProperty("symbol").GetString()!; // e.g. "BTCUSDT"
+                var baseId = sym.EndsWith("USDT") ? sym[..^4] : sym;  // strip USDT → "BTC"
+                if (decimal.TryParse(item.GetProperty("price").GetString(),
+                        System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture, out var price))
+                    result[baseId] = price;
+            }
+            return result;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"[CryptoPriceService] Failed to fetch price for {coinId}: {ex.Message}");
+            Console.Error.WriteLine($"[CryptoPriceService] GetPricesAsync failed: {ex.Message}");
             return null;
         }
     }
 
-    // Search CoinGecko for a coin by name or symbol, returns best match
+    // Search Binance for a coin. Tries exact USDT pair first, then fuzzy via exchangeInfo.
     public async Task<CoinInfo?> SearchCoinAsync(string query)
     {
+        var sym = query.Trim().ToUpperInvariant();
+        // Strip USDT suffix if user typed the full pair
+        if (sym.EndsWith("USDT")) sym = sym[..^4];
+
+        // Fast path: verify the USDT pair exists
         try
         {
-            var url = $"https://api.coingecko.com/api/v3/search?query={Uri.EscapeDataString(query)}";
+            var url = $"https://api.binance.com/api/v3/ticker/price?symbol={sym}USDT";
+            using var response = await _client.GetAsync(url).ConfigureAwait(false);
+            if (response.IsSuccessStatusCode)
+                return new CoinInfo(sym, sym, sym);
+        }
+        catch { }
+
+        // Fuzzy path: scan USDT pairs from exchangeInfo
+        try
+        {
+            var url  = "https://api.binance.com/api/v3/exchangeInfo";
             var json = await _client.GetStringAsync(url).ConfigureAwait(false);
             using var doc = JsonDocument.Parse(json);
 
-            var coins = doc.RootElement.GetProperty("coins");
-            if (coins.GetArrayLength() == 0) return null;
-
-            var first = coins[0];
-            return new CoinInfo(
-                first.GetProperty("id").GetString()!,
-                first.GetProperty("symbol").GetString()!,
-                first.GetProperty("name").GetString()!
-            );
+            foreach (var s in doc.RootElement.GetProperty("symbols").EnumerateArray())
+            {
+                if (s.GetProperty("quoteAsset").GetString() != "USDT") continue;
+                var status = s.GetProperty("status").GetString();
+                if (status != "TRADING") continue;
+                var baseAsset = s.GetProperty("baseAsset").GetString()!;
+                if (baseAsset.Contains(sym))
+                    return new CoinInfo(baseAsset, baseAsset, baseAsset);
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            return null;
+            Console.Error.WriteLine($"[CryptoPriceService] SearchCoinAsync failed: {ex.Message}");
         }
+
+        return null;
     }
 }
