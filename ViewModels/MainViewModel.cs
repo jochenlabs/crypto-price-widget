@@ -46,9 +46,21 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
+    private int? _windowX;
+    private int? _windowY;
+    public int? WindowX => _windowX;
+    public int? WindowY => _windowY;
+
+    public void SaveWindowPosition(int x, int y)
+    {
+        _windowX = x;
+        _windowY = y;
+        SaveSettings();
+    }
+
     private void SaveSettings()
     {
-        _ = _settingsService.SaveAsync(new AppSettings(IsVertical: _isVertical, IsTopmost: _isTopmost)).ConfigureAwait(false);
+        _ = _settingsService.SaveAsync(new AppSettings(IsVertical: _isVertical, IsTopmost: _isTopmost, WindowX: _windowX, WindowY: _windowY)).ConfigureAwait(false);
     }
 
     public ObservableCollection<CoinTileViewModel> Coins { get; } = new();
@@ -80,6 +92,8 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             OnPropertyChanged(nameof(IsVertical));
             _isTopmost = settings.IsTopmost;
             OnPropertyChanged(nameof(IsTopmost));
+            _windowX = settings.WindowX;
+            _windowY = settings.WindowY;
 
             foreach (var s in saved)
                 AddCoinToCollection(s.Id, s.Symbol, s.Name, s.LastPrice, s.LastUpdatedAt);

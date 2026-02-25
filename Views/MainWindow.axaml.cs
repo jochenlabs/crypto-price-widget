@@ -14,6 +14,7 @@ namespace CryptoPriceWidget.Views;
 public partial class MainWindow : Window
 {
     private MainViewModel _vm = null!;
+    private bool _initialPositionApplied = false;
 
     public MainWindow()
     {
@@ -24,6 +25,13 @@ public partial class MainWindow : Window
         // Reposition whenever coins are added/removed (window width changes)
         _vm.Coins.CollectionChanged += OnCoinsChanged;
         _vm.PropertyChanged += OnViewModelPropertyChanged;
+        PositionChanged += OnPositionChanged;
+    }
+
+    private void OnPositionChanged(object? sender, PixelPointEventArgs e)
+    {
+        if (_initialPositionApplied)
+            _vm.SaveWindowPosition(e.Point.X, e.Point.Y);
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -83,18 +91,25 @@ public partial class MainWindow : Window
 
     private void PositionAtCenterTop()
     {
+        if (_vm.WindowX.HasValue && _vm.WindowY.HasValue)
+        {
+            Position = new PixelPoint(_vm.WindowX.Value, _vm.WindowY.Value);
+            _initialPositionApplied = true;
+            return;
+        }
+
         var screen = Screens.Primary;
         if (screen is null) return;
 
         var workArea = screen.WorkingArea;
         var scale    = screen.Scaling;
 
-        // Use actual rendered width (Bounds.Width) since SizeToContent="Width" makes Width=NaN
         double logicalWidth = Bounds.Width > 0 ? Bounds.Width : MinWidth;
         double physX = workArea.X + (workArea.Width - logicalWidth * scale) / 2.0;
         double physY = workArea.Y + (int)(8 * scale);
 
         Position = new PixelPoint((int)physX, (int)physY);
+        _initialPositionApplied = true;
     }
 
     private void CloseButton_Click(object? sender, RoutedEventArgs e) => Close();

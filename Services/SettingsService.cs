@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace CryptoPriceWidget.Services;
 
-public record AppSettings(bool IsVertical = false, bool IsTopmost = true);
+public record AppSettings(bool IsVertical = false, bool IsTopmost = true, int? WindowX = null, int? WindowY = null);
 
 public class SettingsService
 {
