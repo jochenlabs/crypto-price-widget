@@ -66,6 +66,16 @@
           <!-- Right: Add / Pin / Close buttons -->
           <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
 
+
+            <Button x:Name="RefreshButton"
+                    Classes="icon"
+                    Width="26" Height="26"
+                    Foreground="#AAAAAA"
+                    FontSize="13"
+                    ToolTip.Tip="Force refresh"
+                    Click="Refresh_Click">
+              <TextBlock Text="↻" FontSize="13" />
+            </Button>
             <Button Classes="icon"
                     Width="26" Height="26"
                     Foreground="#AAAAAA"

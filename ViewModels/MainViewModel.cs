@@ -29,8 +29,8 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         _ = InitializeAsync();
 
         _timer = new Timer(_ => _ = RefreshAsync(), null,
-                           TimeSpan.FromSeconds(30),
-                           TimeSpan.FromSeconds(30));
+                           TimeSpan.FromMinutes(5),
+                           TimeSpan.FromMinutes(5));
 
         _clockTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
         _clockTimer.Tick += (_, _) => { foreach (var c in Coins) c.NotifyTimeUpdated(); };

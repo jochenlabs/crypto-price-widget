@@ -83,6 +83,13 @@ public partial class MainWindow : Window
 
     private void CloseButton_Click(object? sender, RoutedEventArgs e) => Close();
 
+    private void Refresh_Click(object? sender, RoutedEventArgs e)
+    {
+        RefreshButton.IsEnabled = false;
+        _ = _vm.RefreshAsync().ContinueWith(_ =>
+            Dispatcher.UIThread.Post(() => RefreshButton.IsEnabled = true));
+    }
+
     private void ManageCoins_Click(object? sender, RoutedEventArgs e)
     {
         var dialog = new ManageCoinsWindow(_vm) { Topmost = true };
